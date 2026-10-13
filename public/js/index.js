@@ -1,152 +1,157 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencia al botón para generar los cuádruplos
-    const botonGenerarCuadruplos = document.getElementById('btnGenerar');
-    // Campo de texto donde el usuario escribe la expresión
-    const campoTextoExpresion = document.getElementById('expresion');
-    // Cuerpo de la tabla donde se muestran los resultados
-    const contenedorFilasTabla = document.getElementById('cuerpoTabla');
+    const input = document.getElementById('expresion');
+    const btnGenerar = document.getElementById('btnGenerar');
+    const btnLimpiar = document.getElementById('btnLimpiar');
+    const tablaCuadruplos = document.getElementById('cuerpoTabla');
+    const tablaTriplos = document.getElementById('cuerpoTablaTriplos');
 
-    botonGenerarCuadruplos.addEventListener('click', () => {
-        const textoExpresion = campoTextoExpresion.value;
-
-        // Validamos que la expresión tenga asignación para poder procesarla
-        if (!textoExpresion.includes('=')) {
-            alert('Por favor, ingresa una expresión válida con una asignación (ej. r = a + b * c)');
-            return;
-        }
-
-        const listaCuadruplos = procesarYGenerarCuadruplos(textoExpresion);
-        dibujarTablaEnPantalla(listaCuadruplos);
-    });
-
-    function procesarYGenerarCuadruplos(expresionCompleta) {
-        // 1. Quita espacios recorriendo la cadena manualmente
-        let expresionSinEspacios = '';
-        for (let i = 0; i < expresionCompleta.length; i++) {
-            if (expresionCompleta[i] !== ' ') {
-                expresionSinEspacios += expresionCompleta[i];
-            }
-        }
-
-        // Separa la variable de destino de la expresión
-        const partesExpresion = expresionSinEspacios.split('=');
-        const variableAsignacion = partesExpresion[0];
-        const expresionAProcesar = partesExpresion[1];
-
-        // Convierte la expresión infija a notación postfija
-        const expresionNotacionPostfija = convertirDeInfijaAPostfija(expresionAProcesar);
-
-        // Genera los cuádruplos a partir de la expresión postfija
-        const listaResultanteCuadruplos = [];
-        const pilaDeOperandos = [];
-        let numeroDeVariableTemporal = 1;
-
-        // Recorre cada elemento de la expresión en notación postfija
-        for (let indice = 0; indice < expresionNotacionPostfija.length; indice++) {
-            const elementoActual = expresionNotacionPostfija[indice];
-
-            if (esUnOperadorMatematico(elementoActual)) {
-                // Obtiene los dos operandos más recientes y crea un temporal
-                const segundoOperando = pilaDeOperandos.pop();
-                const primerOperando = pilaDeOperandos.pop();
-                const nuevaVariableTemporal = 't' + numeroDeVariableTemporal;
-
-                // Guarda el cuádruplo con operador, operandos y resultado
-                listaResultanteCuadruplos.push({
-                    operador: elementoActual,
-                    argumento1: primerOperando,
-                    argumento2: segundoOperando,
-                    resultado: nuevaVariableTemporal
-                });
-
-                // Empuja el temporal para continuar con la siguiente operación
-                pilaDeOperandos.push(nuevaVariableTemporal);
-                numeroDeVariableTemporal++;
-            } else {
-                // Si no es operador, es un operando y se apila
-                pilaDeOperandos.push(elementoActual);
-            }
-        }
-
-        // Agrega la asignación final de la expresión al resultado
-        const resultadoFinalExpresion = pilaDeOperandos.pop();
-        listaResultanteCuadruplos.push({
-            operador: '=',
-            argumento1: resultadoFinalExpresion,
-            argumento2: '',
-            resultado: variableAsignacion
-        });
-
-        return listaResultanteCuadruplos;
+    function limpiarFila(contenedor, texto) {
+        contenedor.innerHTML = `<tr><td colspan="5" class="text-muted">${texto}</td></tr>`;
     }
 
-    // Funciones auxiliares para convertir la expresión y ordenar operadores
-
-    function convertirDeInfijaAPostfija(ecuacionMatematica) {
-        let listaElementosPostfijos = [];
-        let pilaDeOperadores = [];
-
-        // Separa números, letras y operadores, incluyendo paréntesis
-        const elementosDeExpresion = ecuacionMatematica.match(/[a-zA-Z0-9]+|[\+\-\*\/\(\)]/g);
-
-        if (!elementosDeExpresion) return listaElementosPostfijos;
-
-        for (let elementoActual of elementosDeExpresion) {
-            if (elementoActual === '(') {
-                pilaDeOperadores.push(elementoActual);
-            } else if (elementoActual === ')') {
-                while (pilaDeOperadores.length > 0 && pilaDeOperadores[pilaDeOperadores.length - 1] !== '(') {
-                    listaElementosPostfijos.push(pilaDeOperadores.pop());
-                }
-                pilaDeOperadores.pop();
-            } else if (esUnOperadorMatematico(elementoActual)) {
-                while (
-                    pilaDeOperadores.length > 0 &&
-                    obtenerJerarquiaDeOperador(pilaDeOperadores[pilaDeOperadores.length - 1]) >= obtenerJerarquiaDeOperador(elementoActual)
-                ) {
-                    listaElementosPostfijos.push(pilaDeOperadores.pop());
-                }
-                pilaDeOperadores.push(elementoActual);
-            } else {
-                listaElementosPostfijos.push(elementoActual);
-            }
-        }
-
-        // Vacía los operadores restantes en la pila
-        while (pilaDeOperadores.length > 0) {
-            listaElementosPostfijos.push(pilaDeOperadores.pop());
-        }
-
-        return listaElementosPostfijos;
+    function mostrarAlerta(icon, title, text) {
+        Swal.fire({ icon, title, text });
     }
 
-    function esUnOperadorMatematico(caracterEvaluado) {
-        return ['+', '-', '*', '/'].includes(caracterEvaluado);
+    function validarExpresion(expresion) {
+        const sinEspacios = expresion.replace(/\s+/g, '');
+        if (!sinEspacios || !sinEspacios.includes('=')) return false;
+
+        const partes = sinEspacios.split('=');
+        if (partes.length !== 2) return false;
+
+        const variable = partes[0];
+        const derecha = partes[1];
+
+        if (!/^[A-Za-z][A-Za-z0-9]*$/.test(variable)) return false;
+        if (!/^[A-Za-z0-9+\-*/()]+$/.test(derecha)) return false;
+
+        const tokens = derecha.split(/([+\-*/()])/).filter(t => t !== '');
+        if (tokens.length === 0) return false;
+
+        return tokens.every(t => /^(?:[A-Za-z][A-Za-z0-9]*|[0-9]+|[+\-*/()])$/.test(t));
     }
 
-    function obtenerJerarquiaDeOperador(operadorEvaluado) {
-        if (operadorEvaluado === '*' || operadorEvaluado === '/') return 2;
-        if (operadorEvaluado === '+' || operadorEvaluado === '-') return 1;
+    function esOperador(token) {
+        return ['+', '-', '*', '/'].includes(token);
+    }
+
+    function prioridad(token) {3
+        if (token === '*' || token === '/') return 2;
+        if (token === '+' || token === '-') return 1;
         return 0;
     }
 
-    // Dibuja en la tabla los cuádruplos generados
-    function dibujarTablaEnPantalla(listaCuadruplosARenderizar) {
-        contenedorFilasTabla.innerHTML = '';
+    function infijaAPostfija(expresion) {
+        const tokens = expresion.match(/[a-zA-Z0-9]+|[\+\-\*\/\(\)]/g);
+        const salida = [];
+        const pila = [];
 
-        listaCuadruplosARenderizar.forEach((cuadruploActual, indiceFila) => {
-            const nuevaFilaTabla = document.createElement('tr');
+        if (!tokens) return salida;
 
-            // Inserta cada celda con los valores del cuádruplo
-            nuevaFilaTabla.innerHTML = `
-                <td>${indiceFila + 1}</td>
-                <td>${cuadruploActual.operador}</td>
-                <td>${cuadruploActual.argumento1}</td>
-                <td>${cuadruploActual.argumento2}</td>
-                <td>${cuadruploActual.resultado}</td>
+        for (const token of tokens) {
+            if (token === '(') {
+                pila.push(token);
+            } else if (token === ')') {
+                while (pila.length && pila[pila.length - 1] !== '(') {
+                    salida.push(pila.pop());
+                }
+                pila.pop();
+            } else if (esOperador(token)) {
+                while (pila.length && prioridad(pila[pila.length - 1]) >= prioridad(token)) {
+                    salida.push(pila.pop());
+                }
+                pila.push(token);
+            } else {
+                salida.push(token);
+            }
+        }
+
+        while (pila.length) {
+            salida.push(pila.pop());
+        }
+
+        return salida;
+    }
+
+    function generarCuadruplos(expresion) {
+        const sinEspacios = expresion.replace(/\s+/g, '');
+        const [variable, derecha] = sinEspacios.split('=');
+        const postfija = infijaAPostfija(derecha);
+        const cuadruplos = [];
+        const pila = [];
+        let temporal = 1;
+
+        for (const token of postfija) {
+            if (esOperador(token)) {
+                const b = pila.pop();
+                const a = pila.pop();
+                const t = 't' + temporal;
+                cuadruplos.push({ operador: token, argumento1: a, argumento2: b, resultado: t });
+                pila.push(t);
+                temporal++;
+            } else {
+                pila.push(token);
+            }
+        }
+
+        const resultado = pila.pop();
+        cuadruplos.push({ operador: '=', argumento1: resultado, argumento2: '', resultado: variable });
+        return cuadruplos;
+    }
+
+    function generarTriplos(cuadruplos) {
+        return cuadruplos.map((cuadruplo, index) => ({
+            numero: index + 1,
+            operador: cuadruplo.operador,
+            argumento1: cuadruplo.argumento1,
+            argumento2: cuadruplo.argumento2,
+            resultado: cuadruplo.resultado
+        }));
+    }
+
+    function dibujarTabla(datos, contenedor) {
+        contenedor.innerHTML = '';
+
+        datos.forEach((fila, index) => {
+            const filaHtml = document.createElement('tr');
+            filaHtml.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${fila.operador}</td>
+                <td>${fila.argumento1}</td>
+                <td>${fila.argumento2}</td>
+                <td>${fila.resultado}</td>
             `;
-
-            contenedorFilasTabla.appendChild(nuevaFilaTabla);
+            contenedor.appendChild(filaHtml);
         });
     }
+
+    btnLimpiar.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+        limpiarFila(tablaCuadruplos, 'Cuadruplos');
+        limpiarFila(tablaTriplos, 'Triplo');
+        mostrarAlerta('info', 'Campo limpio', 'La expresión ha sido borrada.');
+    });
+
+    btnGenerar.addEventListener('click', () => {
+        const valor = input.value.trim();
+
+        if (!valor) {
+            mostrarAlerta('error', 'Campo vacío', 'Escribe una expresión antes de generar resultados.');
+            return;
+        }
+
+        if (!validarExpresion(valor)) {
+            mostrarAlerta('error', 'Expresión inválida', 'Usa letras, números, operadores y paréntesis con una asignación válida.');
+            return;
+        }
+
+        const cuadruplos = generarCuadruplos(valor);
+        const triplos = generarTriplos(cuadruplos);
+
+        dibujarTabla(cuadruplos, tablaCuadruplos);
+        dibujarTabla(triplos, tablaTriplos);
+        mostrarAlerta('success', 'Generado', 'Cuádruplos y triplos generados correctamente.');
+    });
 });

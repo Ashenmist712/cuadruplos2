@@ -4,61 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cuádruplos</title>
-    <!-- CSS local de Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="./public/css/b5.css">
+    <link rel="stylesheet" href="./public/css/main.css">
 </head>
-<body class="bg-light">
+<body>
+    <div class="app-shell">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card app-card shadow">
+                        <div class="card-header app-header">
+                            <h4 class="app-title"><i class="fa-solid fa-calculator me-2"></i>Generador de Cuádruplos y Triplos</h4>
+                        </div>
+                        <div class="card-body app-body">
+                            <div class="mb-3">
+                                <label for="expresion" class="form-label"><i class="fa-solid fa-keyboard me-2"></i>Introduce la expresión:</label>
+                                <input type="text" id="expresion" class="form-control expression-input" placeholder="Ej. r = a + b * c">
 
-    <!-- Contenedor principal de la aplicación -->
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                
-                <!-- Tarjeta con el formulario y la tabla -->
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Generador de Cuádruplos</h4>
-                    </div>
-                    <div class="card-body">
-                        
-                        <!-- Entrada de la expresión y botón para generarla -->
-                        <div class="mb-3">
-                            <label for="expresion" class="form-label">Introduce la expresión:</label>
-                            <div class="input-group">
-                                <input type="text" id="expresion" class="form-control">
-                                <button class="btn btn-success" type="button" id="btnGenerar">Generar Cuádruplos</button>
+                                <div class="action-buttons">
+                                    <button class="btn btn-clean" type="button" id="btnLimpiar"><i class="fa-solid fa-eraser"></i> Limpiar</button>
+                                    <button class="btn btn-generate" type="button" id="btnGenerar"><i class="fa-solid fa-play"></i> Generar Cuádruplos</button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive table-wrapper mt-4">
+                                <table class="table table-bordered text-center align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Operador</th>
+                                            <th>Arg 1</th>
+                                            <th>Arg 2</th>
+                                            <th>Resultado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpoTabla">
+                                        <tr>
+                                            <td colspan="5" class="text-muted">Cuadruplos</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="table-responsive table-wrapper mt-4">
+                                <table class="table table-bordered text-center align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Operador</th>
+                                            <th>Arg 1</th>
+                                            <th>Arg 2</th>
+                                            <th>Resultado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cuerpoTablaTriplos">
+                                        <tr>
+                                            <td colspan="5" class="text-muted">Triplo</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-
-                        <!-- Tabla donde se muestran los cuádruplos resultantes -->
-                        <div class="table-responsive mt-4">
-                            <table class="table table-bordered table-striped text-center align-middle">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Operador</th>
-                                        <th>Arg 1</th>
-                                        <th>Arg 2</th>
-                                        <th>Resultado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cuerpoTabla">
-                                    <!-- Se llena dinámicamente con JavaScript -->
-                                    <tr>
-                                        <td colspan="5" class="text-muted">Expresion</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- Scripts de Bootstrap y de la lógica de la app -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="./public/js/b5.js"></script>
     <script src="./public/js/index.js"></script>
 </body>
